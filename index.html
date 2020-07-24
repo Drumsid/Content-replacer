@@ -1,0 +1,186 @@
+<?
+require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+$APPLICATION->SetTitle("Title");
+?>
+<style>
+    .wrapperMainPreload {
+        position: relative;
+        min-height: 500px;
+    }
+
+    .preloader {
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: #fff;
+        z-index: 1001;
+    }
+
+    .preloader__row {
+        position: relative;
+        top: 50%;
+        left: 50%;
+        width: 70px;
+        height: 70px;
+        margin-top: -35px;
+        margin-left: -35px;
+        text-align: center;
+        animation: preloader-rotate 2s infinite linear;
+    }
+
+    .preloader__item {
+        position: absolute;
+        display: inline-block;
+        top: 0;
+        background-color: #337ab7;
+        border-radius: 100%;
+        width: 35px;
+        height: 35px;
+        animation: preloader-bounce 2s infinite ease-in-out;
+    }
+
+    .preloader__item:last-child {
+        top: auto;
+        bottom: 0;
+        animation-delay: -1s;
+    }
+
+    @keyframes preloader-rotate {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes preloader-bounce {
+
+        0%,
+        100% {
+            transform: scale(0);
+        }
+
+        50% {
+            transform: scale(1);
+        }
+    }
+
+    .loaded_hiding .preloader {
+        transition: 0.3s opacity;
+        opacity: 0;
+    }
+
+    .loaded .preloader {
+        display: none;
+    }
+</style>
+<div class="wrapperMainPreload">
+    <div class="preloader">
+        <div class="preloader__row">
+            <div class="preloader__item"></div>
+            <div class="preloader__item"></div>
+        </div>
+    </div>
+
+    <h1 id="manager">Test Header</h1>
+    <p id="desc">Тестовая страница для проверки подмены заголовка</p>
+    <div id="img">
+        <img src="/upload/medialibrary/725/7256f743059c7a2a6b0464241bcddea1.png" alt="">
+    </div>
+</div>
+
+<script>
+
+    window.onload = function () {
+        document.body.classList.add('loaded_hiding');
+        window.setTimeout(function () {
+            document.body.classList.add('loaded');
+            document.body.classList.remove('loaded_hiding');
+        }, 500);
+    }
+</script>
+
+
+<script>
+    // калалог заголовков и селекторов
+    var content = {
+        coctail: [
+            {
+                selector: '#manager',
+                content: 'Заголовок изменился, заметил?'
+            },
+            {
+                selector: '#img',
+                content: '<img src="/upload/medialibrary/c0e/c0ecd5c0b5326d434a2a45007f0e9751.png" alt="">'
+            },
+            {
+                selector: '#desc',
+                content: 'Тут было написано, "Тестовая страница для проверки подмены заголовка", а теперь тут совсем другой текст!!! И картинка ниже тоже другая'
+            }
+        ],
+        moscow: [
+            {
+                selector: '#manager',
+                content: 'Наташе привет от сайта!'
+            }
+        ],
+        headline: [
+            {
+                selector: '#manager',
+                content: 'Заменяется только заголовок'
+            }
+        ]
+    };
+
+    // заменяет контент
+    function replacer(content, utm) {
+        if (utm in content) {
+            for (i in content[utm]) {
+                if (document.querySelector(content[utm][i]['selector']) != null) {
+                    document.querySelector(content[utm][i]['selector']).innerHTML = content[utm][i]['content'];
+                };
+            };
+        } else {
+            console.log("Каталог контента не имеет такой utm метки");
+        };
+    };
+    // возвращает cookie с именем name, если есть, если нет, то undefined
+    function getCookie(name) {
+        var matches = document.cookie.match(new RegExp(
+            "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+        ));
+        return matches ? decodeURIComponent(matches[1]) : undefined;
+    }
+    // записывает utm в cookie на 30 дней
+    function setCookie(utm) {
+        var date = new Date(new Date().getTime() + (30 * 24 * 60 * 60 * 1000));
+        document.cookie = 'utm_replace=' + utm + '; path=/; expires=' + date.toUTCString();
+    };
+
+    // объединяет все функции в один алгоритм
+    function replacerMain(content) {
+        // check is there utm in url
+        if (/utm_replace=([^&]*)/g.exec(document.URL)) {
+            var utm = /utm_replace=([^&]*)/g.exec(document.URL)[1];
+        } else {
+            var utm = null
+        };
+
+        if (utm != null) {
+            replacer(content, utm);
+            // setCookie(utm);
+            // } else if (getCookie('utm_replace') != undefined) {
+            //     replacer(content, getCookie('utm_replace'));
+            // } else {
+            // console.log('UTM replacer не нашел метку ни в URL, ни в cookie')
+        };
+    };
+    replacerMain(content);
+</script>
+
+<!-- https://www.fuso-ak.ru/testDirect.php -->
+
+<!-- https://1jam.ru/blog/kontekstnaya-reklama/skript-dlya-podmeny-kontenta-na-sayte-po-utm-metkam-podrobnoe-rukovodstvo/ -->
+
+<!-- https://www.fuso-ak.ru/testDirect.php/?utm_replace=coctail -->
+<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>
